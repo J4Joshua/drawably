@@ -2,7 +2,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it } from "vitest";
 import { useRef, StrictMode } from "react";
-import { DrawablyPieChart, DrawablyProgressBar } from "../src/react.js";
+import { DrawablyPieChart, DrawablyProgressBar, DrawablyDoubleQuote } from "../src/react.js";
 import { DrawablyArrow, DrawablyBadge, DrawablyButton, DrawablyCheckbox, DrawablyCircle, DrawablyHighlight, DrawablyList, DrawablySelect, DrawablyTextarea, DrawablyUnderline } from "../src/react.js";
 
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
@@ -26,6 +26,16 @@ it("DrawablyPieChart updates data, forwards native props and cleans up in Strict
 });
 
 let host: HTMLDivElement;
+
+it("DrawablyDoubleQuote changes direction and tears down in StrictMode", () => {
+  act(() => root.render(<StrictMode><DrawablyDoubleQuote seed={42} boil={0} className="quote" /></StrictMode>));
+  expect(host.querySelectorAll("svg")).toHaveLength(1);
+  expect(host.querySelector(".drawably-double-quote--open")).not.toBeNull();
+  act(() => root.render(<StrictMode><DrawablyDoubleQuote direction="close" seed={42} className="updated" /></StrictMode>));
+  expect(host.querySelectorAll("svg")).toHaveLength(1);
+  expect(host.querySelector(".updated .drawably-double-quote--close")).not.toBeNull();
+  act(() => root.render(<span />)); expect(host.querySelector("svg")).toBeNull();
+});
 
 it("DrawablyProgressBar updates values, maxima and milestones in StrictMode", () => {
   const render = (value: number, max = 100, name = "Draft") => act(() => root.render(

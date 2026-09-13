@@ -13,6 +13,7 @@ import {
   type DrawablyButtonOptions,
   type DrawablyListOptions,
   type DrawablyOptions,
+  type DrawablyDoubleQuoteOptions,
   type DrawablyPieChartOptions,
   type PieChartSketch,
   type DrawablyProgressBarOptions,
@@ -24,6 +25,7 @@ import {
   drawablyCheckbox,
   drawablyCircle,
   drawablyDivider,
+  drawablyDoubleQuote,
   drawablyHighlight,
   drawablyInput,
   drawablyList,
@@ -65,6 +67,16 @@ function useSketch<T extends HTMLElement>(
 }
 
 type ButtonProps = DrawablyButtonOptions & ComponentProps<"button">;
+
+export type DrawablyDoubleQuoteProps = DrawablyDoubleQuoteOptions & Omit<ComponentProps<"span">, "children" | "dangerouslySetInnerHTML">;
+
+export function DrawablyDoubleQuote({ direction, seed, roughness, boil, stroke, fill, paper, width, className, ...rest }: DrawablyDoubleQuoteProps): ReactElement {
+  const ref = useSketch<HTMLSpanElement>(
+    el => drawablyDoubleQuote(el, { direction, seed, roughness, boil, stroke, fill, paper, width }),
+    [direction, seed, roughness, boil, stroke, fill, paper, width, className],
+  );
+  return createElement("span", { ...rest, className, ref });
+}
 
 export type DrawablyProgressBarProps = DrawablyProgressBarOptions & Omit<ComponentProps<"div">, "children" | "dangerouslySetInnerHTML">;
 

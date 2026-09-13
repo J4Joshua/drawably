@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Drawably · Double quotes</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../font/font.css">
+  <style>
+    * { box-sizing:border-box; }
+    :root { color-scheme:light; --drawably-paper:#e3e3e1; --drawably-stroke:#2724d1; }
+    body { margin:0; padding:40px 24px; background:var(--drawably-paper); color:#34322e; font:20px/1.5 "Drawably Pen",system-ui,sans-serif; }
+    main { max-width:700px; margin:auto; }
+    h1 { font:inherit; font-size:42px; color:#2724d1; margin:0; }
+    .intro { margin:8px 0 26px; }
+    .pair { display:flex; justify-content:center; gap:64px; text-align:center; margin:28px 0 38px; }
+    .pair figure { margin:0; }
+    .pair .mark { --drawably-quote-size:96px; }
+    figcaption { font-size:16px; }
+    blockquote { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:12px; margin:0; padding:24px 0; }
+    blockquote p { font-size:28px; line-height:1.35; text-align:center; margin:0; }
+    .actions { display:flex; gap:20px; align-items:center; flex-wrap:wrap; margin-top:32px; }
+    .drawably-button { font:inherit; }
+    @media(max-width:480px) { body { padding:28px 18px; } h1 { font-size:34px; } blockquote { gap:2px; --drawably-quote-size:36px; } blockquote p { font-size:24px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Say it in pen.</h1>
+    <p class="intro">Opening and closing double quotation marks.</p>
+    <div class="pair">
+      <figure><span id="open" class="mark"></span><figcaption>Opening</figcaption></figure>
+      <figure><span id="close" class="mark"></span><figcaption>Closing</figcaption></figure>
+    </div>
+    <blockquote><span id="quote-open"></span><p>Good things take a few drafts.</p><span id="quote-close"></span></blockquote>
+    <div class="actions"><button id="resketch" type="button">Re-sketch</button><label><input id="boil" type="checkbox"> Animate pen strokes</label></div>
+  </main>
+  <script type="module">
+    import { drawablyDoubleQuote, drawablyButton, randomSeed } from '../dist/index.js';
+    const boil=document.getElementById('boil');
+    let sketches=[], seed=42;
+    function attach(){
+      sketches.forEach(s=>s.destroy());
+      sketches=['open','close','quote-open','quote-close'].map(id=>drawablyDoubleQuote(document.getElementById(id),{direction:id.endsWith('open')?'open':'close',seed,boil:boil.checked?0.3:0}));
+    }
+    attach();
+    drawablyButton(document.getElementById('resketch'),{seed:42,boil:0});
+    document.getElementById('resketch').addEventListener('click',()=>{seed=randomSeed();sketches.forEach(s=>s.resketch(seed));});
+    boil.addEventListener('change',attach);
+  </script>
+</body>
+</html>

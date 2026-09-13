@@ -27,6 +27,40 @@ export interface Sketch {
   destroy(): void;
 }
 
+export interface DrawablyDoubleQuoteOptions extends DrawablyOptions {
+  direction?: "open" | "close";
+}
+
+/** Decorative double quotation mark; quote content stays in native HTML. */
+export function drawablyDoubleQuote(el: HTMLElement, opts: DrawablyDoubleQuoteOptions = {}): Sketch {
+  if (!(el instanceof HTMLElement)) throw new Error("drawably: expected an HTMLElement");
+  const direction = opts.direction ?? "open";
+  if (direction !== "open" && direction !== "close")
+    throw new Error("drawably: double quote direction must be open or close");
+  const mark = document.createElement("span");
+  mark.className = `drawably-double-quote drawably-double-quote--${direction}`;
+  mark.setAttribute("aria-hidden", "true");
+  el.append(mark);
+  // Two comma-shaped strokes, tuned to the default 3rem square. Opening
+  // marks rotate the same sketch so paired punctuation shares one hand.
+  const layers: Layer[] = [
+    { className: "drawably-outline", gen: (w, h, o) => [0.3, 0.7].map((x, i) => {
+      const ro = { ...o, seed: o.seed + i };
+      return roughLine(w * (x + 0.075), h * 0.37, w * (x + 0.04), h * 0.57, ro) +
+        roughLine(w * (x + 0.04), h * 0.57, w * (x - 0.08), h * 0.68, ro);
+    }).join("") },
+    { className: "drawably-double-quote-ink", gen: (w, h, o) => [0.3, 0.7].map((x, i) =>
+      roughEllipse(w * x, h * 0.35, w * 0.11, h * 0.12, { ...o, seed: o.seed + i }),
+    ).join("") },
+  ];
+  const sketch = attachChrome(mark, layers, opts, false);
+  let destroyed = false;
+  return {
+    resketch(seed) { if (!destroyed) sketch.resketch(seed); },
+    destroy() { if (!destroyed) { destroyed = true; sketch.destroy(); mark.remove(); } },
+  };
+}
+
 export interface DrawablyMilestone {
   label: string;
   value: number;

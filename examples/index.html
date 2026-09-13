@@ -800,6 +800,15 @@
         </div>
       </section>
 
+      <section class="board" id="double-quotes" aria-label="Double quotation marks">
+        <div>
+          <h2>Double quotation marks</h2>
+          <span id="double-quote-open"></span>
+          <span id="double-quote-close"></span>
+          <p><a href="./double-quotes.html">Try opening and closing quotes</a></p>
+        </div>
+      </section>
+
       <section class="board" id="install" aria-label="Install">
         <div class="brand">
           <div class="cmd-wrap" id="install-card">
@@ -1061,6 +1070,7 @@
       import {
         drawablyPieChart,
         drawablyProgressBar,
+        drawablyDoubleQuote,
         drawablyArrow,
         drawablyBadge,
         drawablyButton,
@@ -1078,6 +1088,8 @@
         drawablyUnderline,
       } from "../dist/index.js";
 
+      drawablyDoubleQuote(document.getElementById("double-quote-open"), { direction: "open", seed: 42, boil: 0 });
+      drawablyDoubleQuote(document.getElementById("double-quote-close"), { direction: "close", seed: 42, boil: 0 });
       drawablyProgressBar(document.getElementById("milestone-progress"), {
         value: 45, seed: 42, boil: 0, label: "Project progress",
         milestones: [{ label: "Started", value: 0 }, { label: "Draft", value: 25 }, { label: "Review", value: 60 }, { label: "Complete", value: 100 }],

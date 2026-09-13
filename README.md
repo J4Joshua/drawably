@@ -2,8 +2,8 @@
 
 Hand-drawn UI controls. Every mount generates a fresh pen sketch from seeded
 randomness, and the stroke boils like an animated doodle. Zero dependencies,
-~13.2 KB of compiled core modules gzipped (React wrappers add ~1.4 KB) and a
-~3.5 KB gzipped stylesheet. An
+~13.6 KB of compiled core modules gzipped (React wrappers add ~1.4 KB) and a
+~3.6 KB gzipped stylesheet. An
 optional pen font is a separate 31 KB.
 
 ![Buttons, checkbox, radio and toggle drawn in a boiling pen stroke](assets/demo.svg)
@@ -199,6 +199,48 @@ import { DrawablyPieChart } from "drawably/react";
 
 See [the pie chart example](examples/pie-chart.html). The optional
 `drawably/font.css` registers Drawably Pen; the chart inherits the host font.
+
+## Double quotation marks
+
+Decorative opening and closing double quotes use the existing pen renderer.
+Quote content stays in native HTML; the generated marks are hidden from screen
+readers to avoid repeating punctuation.
+
+```js
+import { drawablyDoubleQuote } from "drawably";
+import "drawably/style.css";
+
+const opening = drawablyDoubleQuote(document.querySelector("#opening"), {
+  direction: "open", seed: 42, boil: 0,
+});
+const closing = drawablyDoubleQuote(document.querySelector("#closing"), {
+  direction: "close", seed: 42, boil: 0,
+});
+opening.resketch(7);
+opening.destroy();
+closing.destroy();
+```
+
+```jsx
+import { DrawablyDoubleQuote } from "drawably/react";
+
+<blockquote>
+  <DrawablyDoubleQuote direction="open" seed={42} boil={0} />
+  <p>Good things take a few drafts.</p>
+  <DrawablyDoubleQuote direction="close" seed={42} boil={0} />
+</blockquote>
+```
+
+`direction` defaults to `"open"`; `"close"` selects closing marks. Each attacher
+appends an owned inline span and returns `resketch(seed?)` and `destroy()`.
+Existing host content remains intact. React accepts native span props except
+children and dangerouslySetInnerHTML. All standard sketch options apply.
+
+Set `--drawably-quote-size` on the host or an ancestor to size the square mark
+(default `3rem`). Use `--drawably-stroke`, `--drawably-fill` and
+`--drawably-width` to theme its pen strokes. No font is required or loaded.
+
+See the [double quotation marks example](examples/double-quotes.html).
 
 ## Text decoration
 

@@ -202,6 +202,25 @@ chart.destroy();
   generator. Angles are clockwise radians from the positive x axis. Zero radius
   or non-positive sweep returns an empty path; a full turn returns a circle.
 
+## Double quotation marks
+
+`drawablyDoubleQuote(el, { direction: "open" | "close", ...opts })` appends
+decorative hand-drawn double quotation marks to a host; default direction is
+`"open"`. The renderer composes existing rough ellipses and lines. Invalid
+directions or a missing element throw before changing the host.
+
+React: `<DrawablyDoubleQuote direction="close" seed={42} boil={0} />`.
+The wrapper renders a span; native span props pass through except children and
+dangerouslySetInnerHTML. Changing direction reattaches the sketch.
+
+- Size with `--drawably-quote-size` (default `3rem`); stroke/fill/width and
+  the standard seed, roughness and CSS boil options work as usual.
+- The generated span and SVG are decorative and hidden from assistive
+  technology. Put the actual quoted text in native `<blockquote>` or `<q>`
+  markup; do not depend on the drawing for semantic quotation.
+- `resketch(seed?)` redraws; `destroy()` removes the owned span and observer,
+  preserving existing host content. No font is needed.
+
 ## Text decoration
 
 Decorates existing inline text; the element keeps its own layout. Use on a word or short phrase — a phrase that wraps gets one box, not one per line.

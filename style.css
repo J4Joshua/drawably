@@ -419,6 +419,16 @@
   min-width: 34px;
 }
 
+.drawably-double-quote {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  font-size: var(--drawably-quote-size, 3rem);
+  vertical-align: middle;
+}
+.drawably-double-quote--open > .drawably-svg { transform: rotate(180deg); }
+.drawably-svg .drawably-double-quote-ink { fill: var(--drawably-ink, var(--drawably-fill, var(--drawably-stroke, #2724d1))); }
+
 .drawably-progress { min-width: 0; }
 .drawably-progress-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 1em; }
 .drawably-progress-heading > :first-child { min-width: 0; overflow-wrap: anywhere; }
