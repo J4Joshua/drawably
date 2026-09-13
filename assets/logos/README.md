@@ -20,6 +20,29 @@ A folder with a raised tab and a scribbled corner accent.
 
 [Download the folder](./folder-pen.png)
 
+## Icon sizes
+
+At tab-bar size the original strokes thin to a blot, so each logo also ships
+at 128 px and 64 px with the stroke thickened before the downscale:
+`folder-pen-128.png`, `folder-pen-64.png`, `sheltie-head-pen-128.png`,
+`sheltie-head-pen-64.png`. Use the 128 px file for anything from 24 to 48 px
+on screen and the 64 px file below that. `make-icons.py` regenerates them
+from the originals with Pillow:
+
+```sh
+python3 assets/logos/make-icons.py assets/logos
+```
+
+To recolour a logo, use it as a CSS mask over a solid colour rather than
+editing the PNG:
+
+```css
+.icon {
+  width: 26px; height: 26px; background: currentColor;
+  mask: url(sheltie-head-pen-128.png) center / contain no-repeat;
+}
+```
+
 ## Use in an application
 
 Copy the desired PNG to your application's public assets directory and render
