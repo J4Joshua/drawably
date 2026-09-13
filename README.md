@@ -10,6 +10,9 @@ optional pen font is a separate 31 KB.
 
 ## Install
 
+This fork also includes [Sheltie head and folder logo assets](assets/logos/README.md)
+as transparent PNGs, with previews and usage examples.
+
 ```sh
 npm i drawably
 ```
