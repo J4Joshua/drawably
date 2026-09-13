@@ -5,6 +5,7 @@ it("exports the public surface", () => {
   for (const name of [
     "drawablyButton",
     "drawablyPieChart",
+    "drawablyProgressBar",
     "roughPieSlice",
     "drawablyCheckbox",
     "drawablyInput",

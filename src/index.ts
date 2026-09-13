@@ -10,6 +10,7 @@ export {
   drawablyInput,
   drawablyList,
   drawablyPieChart,
+  drawablyProgressBar,
   drawablyRadio,
   drawablySelect,
   drawablyTextarea,
@@ -24,6 +25,9 @@ export {
   type DrawablyPieDatum,
   type DrawablyPieChartOptions,
   type PieChartSketch,
+  type DrawablyMilestone,
+  type DrawablyProgressBarOptions,
+  type ProgressBarSketch,
   type Sketch,
 } from "./controls.js";
 export {

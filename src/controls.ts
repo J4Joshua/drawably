@@ -27,6 +27,23 @@ export interface Sketch {
   destroy(): void;
 }
 
+export interface DrawablyMilestone {
+  label: string;
+  value: number;
+}
+
+export interface DrawablyProgressBarOptions extends DrawablyOptions {
+  value?: number;
+  max?: number;
+  label?: string;
+  milestones?: readonly DrawablyMilestone[];
+}
+
+export interface ProgressBarSketch extends Sketch {
+  setValue(value: number): void;
+  setMilestones(milestones: readonly DrawablyMilestone[]): void;
+}
+
 interface Layer {
   className: string;
   pathLength?: boolean;
@@ -162,6 +179,122 @@ function attachChrome(
       el.removeEventListener("pointerdown", onPointer);
       svg.remove();
       el.classList.remove("drawably-host");
+    },
+  };
+}
+
+// Markers need room around both endpoints; the bar fits inside their centres.
+const PROGRESS_INSET = 18;
+const PROGRESS_HEIGHT = 44;
+const PROGRESS_BAR_HEIGHT = 14;
+const PROGRESS_MARKER_RADIUS = 12;
+const PROGRESS_LABEL_GAP = 8;
+
+export function drawablyProgressBar(el: HTMLElement, opts: DrawablyProgressBarOptions = {}): ProgressBarSketch {
+  if (!(el instanceof HTMLElement)) throw new Error("drawably: expected an HTMLElement");
+  const max = opts.max ?? 100, roughness = opts.roughness ?? 1, boil = opts.boil ?? 0.3;
+  if (!Number.isFinite(max) || max <= 0) throw new Error("drawably: progress max must be finite and positive");
+  if (![roughness, boil, opts.width ?? 2].every(v => Number.isFinite(v) && v >= 0))
+    throw new Error("drawably: progress stroke options must be finite and non-negative");
+  function normalize(next: number): number {
+    if (!Number.isFinite(next)) throw new Error("drawably: progress value must be finite");
+    return Math.min(max, Math.max(0, next));
+  }
+  function validateMilestones(items: readonly DrawablyMilestone[]): DrawablyMilestone[] {
+    if (!Array.isArray(items) || items.some(m => !m || typeof m.label !== "string" || !m.label.trim() ||
+      !Number.isFinite(m.value) || m.value < 0 || m.value > max))
+      throw new Error("drawably: milestones need labels and values between 0 and max");
+    if (new Set(items.map(m => m.value)).size !== items.length)
+      throw new Error("drawably: milestone values must be unique");
+    return items.map(m => ({ ...m })).sort((a, b) => a.value - b.value);
+  }
+  let value = normalize(opts.value ?? 0), milestones = validateMilestones(opts.milestones ?? []);
+  let seed = opts.seed ?? randomSeed(), destroyed = false;
+  const wrapper = document.createElement("div");
+  wrapper.className = "drawably-progress";
+  applyTheme(wrapper, opts);
+  const heading = document.createElement("div");
+  heading.className = "drawably-progress-heading";
+  const label = document.createElement("span"), percent = document.createElement("span");
+  label.textContent = opts.label ?? "Progress";
+  percent.setAttribute("aria-hidden", "true");
+  heading.append(label, percent);
+  const track = document.createElement("div");
+  track.className = "drawably-host drawably-progress-track";
+  track.style.height = `${PROGRESS_HEIGHT}px`;
+  const native = document.createElement("progress");
+  native.max = max;
+  native.setAttribute("aria-label", opts.label ?? "Progress");
+  const svg = createSvg();
+  svg.setAttribute("focusable", "false");
+  track.append(native, svg);
+  const list = document.createElement("ol");
+  list.className = "drawably-progress-milestones";
+  list.setAttribute("aria-label", "Milestones");
+  wrapper.append(heading, track, list);
+  el.append(wrapper);
+
+  function draw() {
+    if (destroyed) return;
+    native.value = value;
+    const share = value / max;
+    percent.textContent = `${Math.round(share * 1000) / 10}%`;
+    const size = track.clientWidth || 300;
+    const inset = Math.min(PROGRESS_INSET, size / 2), span = Math.max(0, size - inset * 2);
+    const y = (PROGRESS_HEIGHT - PROGRESS_BAR_HEIGHT) / 2;
+    const layers: Layer[] = [
+      { className: "drawably-outline", gen: (_w, _h, o) => roughRoundedRect(inset, y, span, PROGRESS_BAR_HEIGHT, 6, o) },
+      { className: "drawably-scribble drawably-progress-fill", gen: (_w, _h, o) => share && span > 4 ? scribbleFill(inset + 2, y + 2, (span - 4) * share, PROGRESS_BAR_HEIGHT - 4, o) : "" },
+    ];
+    milestones.forEach((m, i) => {
+      const x = inset + span * m.value / max;
+      layers.push({ className: "drawably-progress-marker", gen: (_w, _h, o) => roughCircle(x, PROGRESS_HEIGHT / 2, PROGRESS_MARKER_RADIUS, { ...o, seed: o.seed + i + 1 }) });
+      if (value >= m.value) layers.push({ className: "drawably-progress-check", gen: (_w, _h, o) => roughCheckmark(x - 6, PROGRESS_HEIGHT / 2 - 6, 12, 12, { ...o, seed: o.seed + i + 1 }) });
+    });
+    paint(svg, layers, [{ x: 0, y: 0, w: size, h: PROGRESS_HEIGHT }], { seed, roughness, boil });
+    list.replaceChildren();
+    list.hidden = !milestones.length;
+    const lanes: { end: number; height: number }[] = [];
+    const entries: { item: HTMLLIElement; lane: number }[] = [];
+    for (const m of milestones) {
+      const item = document.createElement("li");
+      item.dataset.reached = String(value >= m.value);
+      const title = document.createElement("span"), detail = document.createElement("span");
+      title.textContent = m.label;
+      detail.className = "drawably-progress-detail";
+      detail.textContent = `${Math.round(m.value / max * 1000) / 10}% · ${value >= m.value ? "Reached" : "Upcoming"}`;
+      item.append(title, detail);
+      list.append(item);
+      const width = item.offsetWidth || Math.min(144, size);
+      const height = item.offsetHeight || 48;
+      const x = inset + span * m.value / max;
+      const left = Math.max(0, Math.min(size - width, x - width / 2));
+      let lane = lanes.findIndex(l => left >= l.end + PROGRESS_LABEL_GAP);
+      if (lane < 0) { lane = lanes.length; lanes.push({ end: 0, height: 0 }); }
+      lanes[lane].end = left + width;
+      lanes[lane].height = Math.max(lanes[lane].height, height);
+      item.style.left = `${left}px`;
+      entries.push({ item, lane });
+    }
+    const tops: number[] = [];
+    let height = 0;
+    for (const lane of lanes) { tops.push(height); height += lane.height + PROGRESS_LABEL_GAP; }
+    for (const entry of entries) entry.item.style.top = `${tops[entry.lane]}px`;
+    list.style.height = `${Math.max(0, height - PROGRESS_LABEL_GAP)}px`;
+  }
+  draw();
+  const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(draw);
+  observer?.observe(track);
+  document.fonts?.addEventListener("loadingdone", draw);
+  return {
+    setValue(next) { if (!destroyed) { value = normalize(next); draw(); } },
+    setMilestones(next) { if (!destroyed) { milestones = validateMilestones(next); draw(); } },
+    resketch(nextSeed) { if (!destroyed) { seed = nextSeed ?? randomSeed(); draw(); } },
+    destroy() {
+      destroyed = true;
+      observer?.disconnect();
+      document.fonts?.removeEventListener("loadingdone", draw);
+      wrapper.remove();
     },
   };
 }

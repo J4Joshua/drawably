@@ -792,6 +792,14 @@
         </div>
       </section>
 
+      <section class="board" id="progress" aria-label="Milestone progress">
+        <div style="width:100%">
+          <h2>Milestone progress</h2>
+          <div id="milestone-progress"></div>
+          <p><a href="./progress-bar.html">Try the progress bar</a></p>
+        </div>
+      </section>
+
       <section class="board" id="install" aria-label="Install">
         <div class="brand">
           <div class="cmd-wrap" id="install-card">
@@ -1052,6 +1060,7 @@
     <script type="module">
       import {
         drawablyPieChart,
+        drawablyProgressBar,
         drawablyArrow,
         drawablyBadge,
         drawablyButton,
@@ -1069,6 +1078,10 @@
         drawablyUnderline,
       } from "../dist/index.js";
 
+      drawablyProgressBar(document.getElementById("milestone-progress"), {
+        value: 45, seed: 42, boil: 0, label: "Project progress",
+        milestones: [{ label: "Started", value: 0 }, { label: "Draft", value: 25 }, { label: "Review", value: 60 }, { label: "Complete", value: 100 }],
+      });
       drawablyPieChart(document.getElementById("pie-chart"), {
         data: [{ label: "Overexcitement and frustration", value: 60 }, { label: "Learned habit", value: 40 }, { label: "Fear", value: 0 }, { label: "Aggression", value: 0 }],
         seed: 42, boil: 0,

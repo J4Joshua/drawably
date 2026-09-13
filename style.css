@@ -419,6 +419,19 @@
   min-width: 34px;
 }
 
+.drawably-progress { min-width: 0; }
+.drawably-progress-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 1em; }
+.drawably-progress-heading > :first-child { min-width: 0; overflow-wrap: anywhere; }
+.drawably-progress-heading > :last-child { font-variant-numeric: tabular-nums; }
+.drawably-progress-track { width: 100%; font: inherit; }
+/* Keep the native progress element and its accessibility semantics under the pen. */
+.drawably-progress-track > progress { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; pointer-events: none; }
+.drawably-progress-track .drawably-progress-marker { fill: var(--drawably-paper, #e3e3e1); }
+.drawably-progress-track .drawably-progress-check { stroke-width: var(--drawably-width, 1.5); }
+.drawably-progress-milestones { position: relative; list-style: none; padding: 0; margin: 0; }
+.drawably-progress-milestones li { position: absolute; width: max-content; max-width: min(10rem, 100%); text-align: center; overflow-wrap: anywhere; }
+.drawably-progress-detail { display: block; font-size: 0.8em; }
+
 /* Charts reserve space in HTML; their SVG remains decorative chrome. */
 .drawably-pie-chart {
   min-width: 0;

@@ -135,6 +135,39 @@ Built from the controls above; one `seed` covers every stroke, `destroy()` remov
 
 React: `DrawablyChip`, `DrawablyTabs` (`active`), `DrawablyTooltip` (`to` ref), `DrawablyAlert`, `DrawablySteps`, `DrawablyKbd`, `DrawablyQuote`, `DrawablyPager` (`active`).
 
+## Milestone progress
+
+`drawablyProgressBar(el, opts)` appends a native `<progress>` beneath decorative
+pen SVG and a separate native milestone list. `DrawablyProgressBar` is the
+React counterpart. Neither creates an interactive slider; the application
+sets the value.
+
+```js
+const bar = drawablyProgressBar(el, {
+  label: "Project progress", value: 45, max: 100, seed: 42, boil: 0,
+  milestones: [{ label: "Started", value: 0 }, { label: "Review", value: 60 }, { label: "Complete", value: 100 }],
+});
+bar.setValue(60);
+bar.setMilestones([{ label: "Halfway", value: 50 }]);
+bar.resketch(7);
+bar.destroy();
+```
+
+- `value` defaults 0 and is clamped to `[0, max]`; `max` defaults 100, finite
+  and positive. Non-finite values throw before altering the component.
+- Optional `milestones`: `{ label: string, value: number }[]`, nonempty labels,
+  unique finite targets in `[0, max]`. A sorted copy is used. Exact threshold
+  equality marks a milestone reached, including a target of zero.
+- `label` names the native progress and defaults to "Progress". HTML text
+  reports each milestone's target and Reached/Upcoming status. Close labels
+  move into additional rows. The SVG is hidden from assistive technology.
+- React props include value, max, label, milestones and base sketch options;
+  native div props pass through, except children/dangerouslySetInnerHTML.
+- `setValue` and `setMilestones` preserve the seed. Teardown preserves host
+  content and removes owned DOM, the resize observer and the font listener.
+- Host CSS controls width. Standard custom-property themes, CSS boil and
+  reduced-motion handling apply. The font stays opt-in.
+
 ## Pie chart
 
 `drawablyPieChart(el, { data, showLegend?, ...sketchOptions })` appends a square

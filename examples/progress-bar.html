@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Drawably · Milestone progress</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../font/font.css">
+  <style>
+    * { box-sizing: border-box; }
+    :root { color-scheme: light; --drawably-paper:#e3e3e1; --drawably-stroke:#2724d1; }
+    body { margin:0; padding:48px 24px; background:var(--drawably-paper); color:#34322e; font:20px/1.5 "Drawably Pen",system-ui,sans-serif; }
+    main { max-width:780px; margin:auto; }
+    h1 { font:inherit; font-size:42px; color:#2724d1; margin:0; }
+    .intro { margin:8px 0 48px; }
+    .controls { margin-top:52px; }
+    .range { display:flex; flex-wrap:wrap; gap:16px; align-items:center; }
+    input[type=range] { flex:1 1 180px; min-width:0; accent-color:#2724d1; }
+    .actions { display:flex; gap:12px; flex-wrap:wrap; margin:22px 0; }
+    .drawably-button { font:inherit; }
+    .note { font-size:16px; }
+    @media(max-width:480px) { body { padding:28px 18px; } h1 { font-size:34px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>A little progress, in pen.</h1>
+    <p class="intro">One milestone at a time.</p>
+    <div id="project-progress"></div>
+    <section class="controls" aria-label="Preview controls">
+      <label class="range" for="value">Progress <input id="value" type="range" min="0" max="100" value="45"><output id="current" for="value">45%</output></label>
+      <div class="actions"><button id="restart" type="button">Start over</button><button id="next" type="button">Next milestone</button><button id="resketch" type="button">Re-sketch</button></div>
+      <label><input id="boil" type="checkbox"> Animate pen strokes</label>
+      <p id="status" class="note" role="status">Move the slider to try the progress bar.</p>
+    </section>
+  </main>
+  <script type="module">
+    import { drawablyProgressBar, drawablyButton, randomSeed } from '../dist/index.js';
+    const milestones=[{label:'Started',value:0},{label:'First draft',value:25},{label:'Review',value:60},{label:'Complete',value:100}];
+    const range=document.getElementById('value'), current=document.getElementById('current'), status=document.getElementById('status'), boil=document.getElementById('boil');
+    let value=45, seed=42, bar;
+    function attach(){bar?.destroy();bar=drawablyProgressBar(document.getElementById('project-progress'),{value,label:'Project progress',milestones,seed,boil:boil.checked ? 0.3 : 0});}
+    function update(next){value=next;range.value=String(value);current.value=value+'%';bar.setValue(value);}
+    attach();
+    for(const id of ['restart','next','resketch'])drawablyButton(document.getElementById(id),{seed:42,boil:0});
+    range.addEventListener('input',()=>update(range.valueAsNumber));
+    range.addEventListener('change',()=>{status.textContent=`${milestones.filter(m=>value>=m.value).length} of ${milestones.length} milestones reached.`;});
+    document.getElementById('restart').addEventListener('click',()=>{update(0);status.textContent='Started again.';});
+    document.getElementById('next').addEventListener('click',()=>{const next=milestones.find(m=>m.value>value);update(next?.value??100);status.textContent=next?`${next.label} reached.`:'All milestones reached.';});
+    document.getElementById('resketch').addEventListener('click',()=>{seed=randomSeed();bar.resketch(seed);});
+    boil.addEventListener('change',attach);
+  </script>
+</body>
+</html>

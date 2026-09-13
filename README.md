@@ -2,8 +2,8 @@
 
 Hand-drawn UI controls. Every mount generates a fresh pen sketch from seeded
 randomness, and the stroke boils like an animated doodle. Zero dependencies,
-~12 KB of compiled core modules gzipped (React wrappers add ~1.3 KB) and a
-~3.3 KB gzipped stylesheet. An
+~13.2 KB of compiled core modules gzipped (React wrappers add ~1.4 KB) and a
+~3.5 KB gzipped stylesheet. An
 optional pen font is a separate 31 KB.
 
 ![Buttons, checkbox, radio and toggle drawn in a boiling pen stroke](assets/demo.svg)
@@ -99,6 +99,54 @@ Every control has a React counterpart in `drawably/react`: `DrawablyButton`,
 `DrawablyCheckbox`, `DrawablyRadio`, `DrawablyToggle`, `DrawablyInput`,
 `DrawablyTextarea`, `DrawablySelect`, `DrawablyDivider`, `DrawablyCard`,
 `DrawablyBadge`, `DrawablyList`.
+
+## Progress bar with milestones
+
+`drawablyProgressBar(el, opts)` appends a native `<progress>` element beneath
+hand-drawn SVG chrome and an HTML list of milestones. A reached milestone gets
+a pen checkmark. Labels use extra rows when needed to prevent overlap.
+
+```js
+import { drawablyProgressBar } from "drawably";
+import "drawably/style.css";
+
+const milestones = [
+  { label: "Started", value: 0 },
+  { label: "First draft", value: 25 },
+  { label: "Review", value: 60 },
+  { label: "Complete", value: 100 },
+];
+const progress = drawablyProgressBar(document.querySelector("#progress"), {
+  label: "Project progress", value: 45, max: 100, milestones, seed: 42, boil: 0,
+});
+progress.setValue(60);
+progress.setMilestones(milestones);
+progress.resketch(7);
+progress.destroy();
+```
+
+```jsx
+import { DrawablyProgressBar } from "drawably/react";
+
+<DrawablyProgressBar label="Project progress" value={45} max={100}
+  milestones={milestones} seed={42} boil={0} />
+```
+
+- Defaults: `value: 0`, `max: 100`, `label: "Progress"`, no milestones.
+- Values are finite numbers, clamped to `[0, max]`; `max` must be positive.
+  Milestone values use the same units as `value`, must be unique and within
+  that range, and are sorted without modifying the supplied array.
+- Milestones are reached when `value >= milestone.value`. Moving progress
+  backwards restores future milestones to the upcoming state.
+- The native progress element exposes its accessible name, maximum and value.
+  The separate milestone list exposes each label, target and reached status.
+- Native div props pass through the React wrapper; use `label` to name the
+  progress element. `value`, `max` and `milestones` props update the component.
+- Standard sketch options apply. `width` controls pen thickness; the host's CSS
+  width determines the component width. No font is loaded automatically.
+- `destroy()` removes only owned content, observers and font listeners.
+
+See the [interactive progress bar example](examples/progress-bar.html).
 
 ## Pie chart
 

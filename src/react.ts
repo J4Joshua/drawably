@@ -15,6 +15,8 @@ import {
   type DrawablyOptions,
   type DrawablyPieChartOptions,
   type PieChartSketch,
+  type DrawablyProgressBarOptions,
+  type ProgressBarSketch,
   drawablyArrow,
   drawablyBadge,
   drawablyButton,
@@ -26,6 +28,7 @@ import {
   drawablyInput,
   drawablyList,
   drawablyPieChart,
+  drawablyProgressBar,
   drawablyRadio,
   drawablySelect,
   drawablyTextarea,
@@ -62,6 +65,19 @@ function useSketch<T extends HTMLElement>(
 }
 
 type ButtonProps = DrawablyButtonOptions & ComponentProps<"button">;
+
+export type DrawablyProgressBarProps = DrawablyProgressBarOptions & Omit<ComponentProps<"div">, "children" | "dangerouslySetInnerHTML">;
+
+export function DrawablyProgressBar({ value = 0, max, label, milestones, seed, roughness, boil, stroke, fill, paper, width, className, ...rest }: DrawablyProgressBarProps): ReactElement {
+  const sketchRef = useRef<ProgressBarSketch | null>(null);
+  const ref = useSketch<HTMLDivElement>(
+    el => (sketchRef.current = drawablyProgressBar(el, { value, max, label, milestones, seed, roughness, boil, stroke, fill, paper, width })),
+    [max, label, seed, roughness, boil, stroke, fill, paper, width, className],
+  );
+  useEffect(() => { sketchRef.current?.setValue(value); }, [value]);
+  useEffect(() => { sketchRef.current?.setMilestones(milestones ?? []); }, [milestones]);
+  return createElement("div", { ...rest, className, ref });
+}
 
 export function DrawablyButton({ seed, roughness, boil, stroke, fill, paper, width, variant, state, tone, className, children, ...rest }: ButtonProps): ReactElement {
   const sketchRef = useRef<ButtonSketch | null>(null);

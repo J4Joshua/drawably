@@ -2,7 +2,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it } from "vitest";
 import { useRef, StrictMode } from "react";
-import { DrawablyPieChart } from "../src/react.js";
+import { DrawablyPieChart, DrawablyProgressBar } from "../src/react.js";
 import { DrawablyArrow, DrawablyBadge, DrawablyButton, DrawablyCheckbox, DrawablyCircle, DrawablyHighlight, DrawablyList, DrawablySelect, DrawablyTextarea, DrawablyUnderline } from "../src/react.js";
 
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
@@ -26,6 +26,23 @@ it("DrawablyPieChart updates data, forwards native props and cleans up in Strict
 });
 
 let host: HTMLDivElement;
+
+it("DrawablyProgressBar updates values, maxima and milestones in StrictMode", () => {
+  const render = (value: number, max = 100, name = "Draft") => act(() => root.render(
+    <StrictMode><DrawablyProgressBar value={value} max={max} milestones={[{ label: name, value: 50 }]}
+      seed={42} boil={0} label="Upload" className="custom" data-testid="progress" /></StrictMode>,
+  ));
+  render(20);
+  expect(host.querySelectorAll("progress")).toHaveLength(1);
+  expect(host.querySelector("[data-testid=progress]")?.className).toBe("custom");
+  const path = host.querySelector(".drawably-outline")?.getAttribute("d");
+  render(50); expect(host.querySelector("li")?.dataset.reached).toBe("true");
+  expect(host.querySelector(".drawably-outline")?.getAttribute("d")).toBe(path);
+  render(80, 200, "Checkpoint");
+  expect(host.querySelector("progress")?.max).toBe(200);
+  expect(host.textContent).toContain("40%"); expect(host.textContent).toContain("Checkpoint");
+  act(() => root.render(<span />)); expect(host.querySelector("progress")).toBeNull();
+});
 let root: Root;
 
 beforeEach(() => {
